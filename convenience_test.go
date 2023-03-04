@@ -73,6 +73,14 @@ func (m *mockTree) DelSection(config, section string) {
 	m.Called(config, section)
 }
 
+func (m *mockTree) DelSections(config, typ string) {
+	m.Called(config, typ)
+}
+
+func (m *mockTree) Clear(config string) {
+	m.Called(config)
+}
+
 func TestMain(m *testing.M) {
 	defaultTree = &mockTree{}
 	os.Exit(m.Run())

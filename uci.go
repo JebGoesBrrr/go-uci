@@ -82,6 +82,12 @@ type Tree interface {
 
 	// DelSection remove a config section and its options.
 	DelSection(config, section string)
+
+	// DelSections removes all config sections of the given type
+	DelSections(config, typ string)
+
+	// Clear removes all config sections of the given config, effectively clearing it
+	Clear(config string)
 }
 
 type tree struct {
@@ -310,6 +316,13 @@ func (t *tree) AddSection(config, section, typ string) error {
 		cfg.tainted = true
 		t.configs[config] = cfg
 	}
+
+	if section == "" {
+		cfg.Add(newSection(typ, section))
+		cfg.tainted = true
+		return nil
+	}
+
 	sec := cfg.Get(section)
 	if sec == nil {
 		cfg.Add(newSection(typ, section))
@@ -331,6 +344,38 @@ func (t *tree) DelSection(config, section string) {
 		return
 	}
 	cfg.Del(section)
+	cfg.tainted = true
+}
+
+func (t *tree) DelSections(config, typ string) {
+	t.Lock()
+	defer t.Unlock()
+
+	cfg, ok := t.ensureConfigLoaded(config)
+	if !ok {
+		return
+	}
+
+	newSections := []*section{}
+	for _, sec := range cfg.Sections {
+		if sec.Type != typ {
+			newSections = append(newSections, sec)
+		}
+	}
+	cfg.Sections = newSections
+	cfg.tainted = true
+}
+
+func (t *tree) Clear(config string) {
+	t.Lock()
+	defer t.Unlock()
+
+	cfg, ok := t.ensureConfigLoaded(config)
+	if !ok {
+		return
+	}
+
+	cfg.Sections = []*section{}
 	cfg.tainted = true
 }
 

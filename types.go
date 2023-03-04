@@ -129,15 +129,15 @@ func unmangleSectionName(name string) (typ string, index int, err error) { //nol
 
 var ErrUnnamedIndexOutOfBounds = errors.New("invalid name: index out of bounds")
 
-func (c *config) getUnnamed(name string) (*section, error) {
+func (c *config) getUnnamedIdx(name string) (int, error) {
 	typ, idx, err := unmangleSectionName(name)
 	if err != nil {
-		return nil, err
+		return -1, err
 	}
 
 	count := c.count(typ)
 	if -count > idx || idx >= count {
-		return nil, ErrUnnamedIndexOutOfBounds
+		return -1, ErrUnnamedIndexOutOfBounds
 	}
 	if idx < 0 {
 		idx += count // count from the end
@@ -146,12 +146,22 @@ func (c *config) getUnnamed(name string) (*section, error) {
 	for i, n := 0, 0; i < len(c.Sections); i++ {
 		if c.Sections[i].Type == typ {
 			if idx == n {
-				return c.Sections[i], nil
+				return i, nil
 			}
 			n++
 		}
 	}
-	return nil, nil
+	return -1, nil
+}
+
+func (c *config) getUnnamed(name string) (*section, error) {
+	idx, err := c.getUnnamedIdx(name)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return c.Sections[idx], nil
 }
 
 func (c *config) Add(s *section) *section {
@@ -182,11 +192,21 @@ func (c *config) Merge(s *section) *section {
 
 func (c *config) Del(name string) {
 	var i int
-	for i = 0; i < len(c.Sections); i++ {
-		if c.Sections[i].Name == name {
-			break
+	var err error
+
+	if strings.HasPrefix(name, "@") {
+		i, err = c.getUnnamedIdx(name)
+		if err != nil {
+			return
+		}
+	} else {
+		for i = 0; i < len(c.Sections); i++ {
+			if c.Sections[i].Name == name {
+				break
+			}
 		}
 	}
+
 	if i < len(c.Sections) {
 		c.Sections = append(c.Sections[:i], c.Sections[i+1:]...)
 	}
