@@ -191,6 +191,15 @@ func TestDelSection(t *testing.T) {
 
 	_, exists = r.GetSections("nonexistent", "foo")
 	assert.False(exists)
+
+	names, exists = r.GetSections("system", "system")
+	assert.True(exists)
+	assert.ElementsMatch(names, []string{"@system[0]"})
+	r.DelSection("system", names[0])
+
+	names, exists = r.GetSections("system", "system")
+	assert.True(exists)
+	assert.Len(names, 0)
 }
 
 func TestGet(t *testing.T) {
