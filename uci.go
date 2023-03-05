@@ -1,6 +1,7 @@
 package uci
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -128,6 +129,14 @@ func (t *tree) loadConfig(name string) error {
 	if err != nil {
 		return fmt.Errorf("reading config file failed: %w", err)
 	}
+
+	body = bytes.Map(func(r rune) rune {
+		if r != '\r' {
+			return r
+		}
+		return -1
+	}, body)
+
 	cfg, err := parse(name, string(body))
 	if err != nil {
 		return err
