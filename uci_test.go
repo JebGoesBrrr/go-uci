@@ -383,7 +383,7 @@ func TestCommit(t *testing.T) {
 		m.On("Write", mock.AnythingOfType("[]uint8")).Return(onwrite)
 		m.On("Chmod", os.FileMode(0644)).Return(onchmod)
 		m.On("Sync").Return(onsync)
-		m.On("Rename", "testdata/cfgname").Return(onrename)
+		m.On("Rename", filepath.Join("testdata", "cfgname")).Return(onrename)
 	}
 
 	reset(errors.New("fail write"), nil, nil, nil) //nolint:goerr113
