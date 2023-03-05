@@ -60,3 +60,13 @@ func AddSection(config, section, typ string) error {
 func DelSection(config, section string) {
 	defaultTree.DelSection(config, section)
 }
+
+// DelSections delegates to the default tree. See Tree for details.
+func DelSections(config, typ string) {
+	defaultTree.DelSections(config, typ)
+}
+
+// Clear delegates to the default tree. See Tree for details.
+func Clear(config string) {
+	defaultTree.Clear(config)
+}
