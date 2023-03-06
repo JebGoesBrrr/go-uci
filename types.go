@@ -43,6 +43,9 @@ func (c *config) WriteTo(w io.Writer) (n int64, err error) {
 		}
 
 		for _, opt := range sec.Options {
+			if len(opt.Values) <= 0 {
+				return 0, fmt.Errorf("%s[%s].%s has empty values", sec.Name, sec.Type, opt.Name)
+			}
 			switch opt.Type {
 			case TypeOption:
 				fmt.Fprintf(&buf, "\toption %s '%s'\n", opt.Name, opt.Values[0])
